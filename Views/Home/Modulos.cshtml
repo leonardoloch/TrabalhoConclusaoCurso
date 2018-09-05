@@ -1,0 +1,310 @@
+﻿@{
+    var modulos = ViewBag.No;
+    var ligacoes = ViewBag.Ligacoes;
+}
+
+<html>
+<head>
+    <script src="~/js/vis.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js" type="text/javascript"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js" type="text/javascript"></script>
+    <environment include="Development">
+
+        <link rel="stylesheet" href="~/css/vis.css" />
+    </environment>
+    <style type="text/css">
+        #mynetwork {
+            /*width: 900px;*/
+            height: 400px;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+    <div class="vis-config-header"><h3>Módulos Disponiveis</h3></div>
+    <div id="mynetwork"></div>
+    <pre id="eventSpan" hidden="hidden"><h2></h2></pre>
+    <div id="chart_div" hidden="hidden" style="width: 1000px; height: 500px;"></div>
+    <table id="tabelaAlt" hidden="hidden">
+        <tbody>
+            <tr>
+                <td>
+                    <h2>Módulos</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td><label for="node-label">Nome</label></td>
+                                <td><input id="node-label" type="text" value=""></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td><label for="node-ip">IP</label></td>
+                                <td><input id="node-ip" type="text" value=""></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Ação</td>
+                                <td>
+
+                                    <button id="node-update" onclick="updateNodeSistemaIpNome();">Salvar</button>
+                                    <button id="node-remove" onclick="removeNode();">Deletar</button>
+                                </td>
+                            </tr>
+                            <tr>
+
+
+                                <td><input id="node-id" type="text" value="" hidden="hidden"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+
+            </tr>
+
+        </tbody>
+    </table>
+
+</body>
+</html>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+
+    // create an array with nodes
+    var nodes = new vis.DataSet(@Html.Raw(Json.Serialize(@modulos)));
+
+
+
+
+
+    // create an array with edges
+    var edges = new vis.DataSet(@Html.Raw(Json.Serialize(@ligacoes)));
+
+    // create a network
+    var container = document.getElementById('mynetwork');
+            var data = {
+        nodes: nodes,
+        edges: edges
+    };
+
+            var options = {
+    };
+
+
+    var network = new vis.Network(container, data, options);
+
+    network.on("click", function (params) {
+        document.getElementById('chart_div').hidden = "hidden";
+        params.event = "[original event]";
+        var potencia;
+        if (nodes._data[params['nodes']].title == "") potencia = 'Sem valor no momento atualize o módulo.';
+        else potencia = nodes._data[params['nodes']].title+'dB';
+         document.getElementById('eventSpan').hidden = "";
+        document.getElementById('eventSpan').innerHTML =
+            '<h2>Informação Sobre o Módulo</h2>' +
+            '<h4 id="nome">Nome do Modulo: ' + nodes._data[params['nodes']].label + '</h4>' +
+            '<h4 id="potencia">' +'Potência: ' + potencia + '</h4>' +
+            '<h4>ID: ' + nodes._data[params['nodes']].id + '</h4>' +
+            '<h4 id="ip">IP: ' + nodes._data[params['nodes']].attributes +
+        '</h4>' + '</h4><button onclick="getPotencia(' + nodes._data[params['nodes']].id + ')">Atualizar Potência</button><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id+')">Obter grafico de consumo</button>';
+        console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
+        //Mostrar tabela para alterar os atributos
+        document.getElementById('tabelaAlt').hidden = "";
+        document.getElementById("node-label").value = nodes._data[params['nodes']].label;
+        document.getElementById("node-ip").value = nodes._data[params['nodes']].attributes;
+        document.getElementById("node-id").value = nodes._data[params['nodes']].id;
+
+            });
+
+    function getPotencia(idNodo)
+    {
+
+
+        $.ajax({
+
+            type: 'GET',
+            url: '/Home/AtualizarConsumo',
+            data: { id: idNodo },
+           
+            success: function (data) {
+                if (data == null) {
+                    alert("Não foi possivel atualizar o valor!");
+                }
+                else {
+                    if (data.estado == 0) {
+
+                        alert("Módulo esta ocupado no momento!");
+                    }
+                    else {
+                                              
+                        nodes._data[idNodo].title = data.potencia;
+                        document.getElementById("potencia").innerHTML = "Potência: " + nodes._data[idNodo].title +"dB";                        
+                        updateNode();
+                        alert("Atualizado com sucesso"); 
+                    }
+                }
+
+            },
+          error: function (data) { //linha 
+                alert("Sem conexão com o servidor");
+            }
+        });
+
+    }
+
+    function updateNodeSistemaIpNome()
+    {
+        $.ajax({
+            type: 'GET',
+            url: '/Home/AtualizarInformacao',
+            data: { id: nodes._data[document.getElementById("node-id").value].id, ip: document.getElementById("node-ip").value, nome: document.getElementById("node-label").value },
+            success: function (data) {
+                if (data == false) {
+                    alert("Não foi possivel atualizar o valor!");
+                }
+                else {
+                    document.getElementById("ip").innerHTML = "IP: " + document.getElementById("node-ip").value;
+                    document.getElementById("nome").innerHTML = "Nome do Modulo: " + document.getElementById("node-label").value;
+                    updateNode();
+                }
+
+            },
+            error: function (data) { 
+                alert("Sem conexão com o servidor");
+            }
+        });
+    }
+
+    function updateNode() {
+        try {
+            nodes.update({
+                id: document.getElementById("node-id").value,
+                label: document.getElementById('node-label').value
+            });
+        }
+        catch (err) {
+            alert(err);
+        }
+    }
+    function removeNode() {
+        $.ajax({
+            type: 'GET',
+            url: '/Home/Delete',
+            data: { id: nodes._data[document.getElementById("node-id").value].id },
+            success: function (data) {
+                if (data == false) {
+                    alert("Não foi possivel deletar o nó!");
+                }
+                else {
+
+                    try {
+                        nodes.remove({ id: document.getElementById('node-id').value });
+                    }
+                    catch (err) {
+                        alert(err);
+                    }
+
+                    document.getElementById('eventSpan').hidden = "hidden";
+                    document.getElementById('tabelaAlt').hidden = "hidden";
+
+
+                }
+                
+
+            },
+            error: function (data) {
+                alert("Sem conexão com o servidor");
+            }
+        });
+      
+    }
+
+    //-----------------Histórico Módulos--------------------------------------
+    google.charts.load('current', { 'packages': ['corechart'] });
+    //google.charts.setOnLoadCallback(drawChart);
+
+
+    function getValueHistoric(idNodo)
+    {
+        $.ajax({
+
+            type: 'GET',
+            url: '/Home/AtualizarConsumo',
+            data: { id: idNodo },
+
+            success: function (data) {
+                if (data == null) {
+                    alert("Não foi possivel obter o grafico!");
+                }
+                else {
+                    if (data.estado == 0) {
+
+                        alert("Módulo esta ocupado no momento!");
+                    }
+                    else {
+                        
+                        drawChart(data);
+                    }
+                }
+
+            },
+            error: function (data) { //linha 
+                alert("Sem conexão com o servidor");
+            }
+        });
+
+
+    }
+
+    function drawChart(value) {
+        google.charts.load('current', { 'packages': ['line'] });
+        
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', '2015');
+        //data.addColumn('number', '2016');
+        //data.addColumn('number', '2017');
+        var DaysEnum =[ 'Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.' , 'Nov.', 'Dez.'];
+        var x = 2015;
+        //data.addRows(JSON.parse(value).operations);
+        data.addRows([
+            Object.values(JSON.parse(value).operations[0]),
+            Object.values(JSON.parse(value).operations[1]),
+            Object.values(JSON.parse(value).operations[2]),
+            Object.values(JSON.parse(value).operations[3]),
+            Object.values(JSON.parse(value).operations[4]),
+            Object.values(JSON.parse(value).operations[5]),
+            Object.values(JSON.parse(value).operations[6]),
+            Object.values(JSON.parse(value).operations[7]),
+            Object.values(JSON.parse(value).operations[8]),
+            Object.values(JSON.parse(value).operations[9]),
+            Object.values(JSON.parse(value).operations[10]),
+            Object.values(JSON.parse(value).operations[11])
+        ]);
+       
+
+        
+        var options = {
+            title: 'Consumo de Energia Elétrica',
+            width: 900,
+            height: 500,
+            hAxis: {
+                format: 'M/yy',
+                gridlines: { count: 15 }
+            },
+            vAxis: {
+                gridlines: { color: 'none' },
+                minValue: 0
+            }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        document.getElementById('chart_div').hidden = "";
+
+        chart.draw(data, options);
+
+       
+    }
+
+
+</script>

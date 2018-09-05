@@ -1,0 +1,55 @@
+﻿
+
+<html>
+<head>
+    <script src="~/js/vis.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js" type="text/javascript"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js" type="text/javascript"></script>
+    <environment include="Development">
+
+        <link rel="stylesheet" href="~/css/vis.css" />
+    </environment>
+   
+</head>
+<body>
+   
+    
+        <div class="row">
+            <label class="required" for="name">Nome do Servidor:</label><br />
+            <input id="nome" class="input" name="name" type="text" value="" size="30" /><br />
+            <span id="name_validation" class="error_message"></span>
+        </div>
+        <div class="row">
+            <label class="required" >IP:</label><br />
+            <input id="ip" required pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" class="input" type="text" value="" size="30" /><br />
+            <span id="email_validation" class="error_message"></span>
+        </div></br>
+       
+       <button onclick="salvarModulo()">Salvar</button>
+    
+    
+</body>
+</html>
+<script type="text/javascript">
+
+    function salvarModulo() {
+        
+            $.ajax({
+                type: 'GET',
+                url: '/Home/Save',
+                data: { nome: nome.value, ip:ip.value },
+                success: function (data) {
+                    
+                        alert(data);
+                },
+                error: function (data) { //linha 14
+                    alert("Sem conexão com o servidor");
+                }
+            });
+        
+
+    }
+
+  
+</script>
+
