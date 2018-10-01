@@ -19,8 +19,8 @@ using Chart.Mvc.ComplexChart;
 using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
-
-
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace WebApplication1.Controllers
 {
@@ -46,7 +46,7 @@ namespace WebApplication1.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Descrição da Aplicação";
-
+            client_MqttMsgPublish();
             return View();
         }
 
@@ -91,12 +91,58 @@ namespace WebApplication1.Controllers
         public string Save(string nome, string ip)
         {
             string result;
+            MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
+
+            // register to message received 
+            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+
+
+            client.Connect(Guid.NewGuid().ToString());
+
+            // subscribe to the topic "/home/temperature" with QoS 2 
+            client.Subscribe(new string[] { "/consumo" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+
             DBConnect db = new DBConnect();
-            if (db.Insert(nome, ip)) result = "Salvo com sucesso";
+            if (db.Insert(nome, ip))
+            {
+
+
+
+                
+                result = "Salvo com sucesso";
+            }
             else result = "Error ao salvar - Tente novamente";
             db = null;
             return result;
         }
+
+
+       
+
+
+
+    
+
+    static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        {
+            DBConnect db = new DBConnect();
+            string  teste = Encoding.UTF8.GetString(e.Message);
+            db.UpdatePotencia(2, Convert.ToInt32(teste));
+        }
+
+        static void client_MqttMsgPublish()
+        {
+            MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
+
+            // register to message received 
+            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+
+
+            client.Connect(Guid.NewGuid().ToString());
+            client.Publish("/estado", Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            
+        }
+        
         public bool Delete(int id)
         {
             bool result;

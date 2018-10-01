@@ -5,13 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\js\NovaPasta\**" />
+    <Content Remove="wwwroot\js\NovaPasta\**" />
+    <EmbeddedResource Remove="wwwroot\js\NovaPasta\**" />
+    <None Remove="wwwroot\js\NovaPasta\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Models\ServidorExterno.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Chart.Mvc" Version="1.0.0.2" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.5.0" />
-    <PackageReference Include="GnatMQ_Broker" Version="1.2.0" />
+    <PackageReference Include="M2MqttDotnetCore" Version="1.0.8" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.6" />
     <PackageReference Include="Microsoft.AspNet.WebApi" Version="5.2.6" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
