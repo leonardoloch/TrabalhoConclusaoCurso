@@ -28,7 +28,7 @@
     <table id="tabelaAlt" hidden="hidden">
         <tbody>
             <tr>
-                <td>
+                <button>
                     <h2>Módulos</h2>
                     <table>
                         <tbody>
@@ -39,8 +39,9 @@
                             </tr>
                             <tr>
                                 <td></td>
-                                <td><label for="node-ip">IP</label></td>
-                                <td><input id="node-ip" type="text" value=""></td>
+                                <td>Estado: </td>
+
+                                <button id="node-topico" onclick="MudarTopico();">asdsadsad</button>
                             </tr>
                             <tr>
                                 <td></td>
@@ -103,15 +104,16 @@
         document.getElementById('eventSpan').innerHTML =
             '<h2>Informação Sobre o Módulo</h2>' +
             '<h4 id="nome">Nome do Modulo: ' + nodes._data[params['nodes']].label + '</h4>' +
-            '<h4 id="potencia">' +'Potência: ' + potencia + '</h4>' +
+            '<h4 id="node-estado">' +'Potência: ' + potencia + '</h4>' +
             '<h4>ID: ' + nodes._data[params['nodes']].id + '</h4>' +
-            '<h4 id="ip">IP: ' + nodes._data[params['nodes']].attributes +
-        '</h4>' + '</h4><button onclick="getPotencia(' + nodes._data[params['nodes']].id + ')">Atualizar Potência</button><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id+')">Obter grafico de consumo</button>';
+            '<h4 id="estado">Estado: ' +
+        '<button onclick="MudarEstado(' + nodes._data[params['nodes']].id + ')">' + nodes._data[params['nodes']].attributes +'</button>'+
+            '</h4><button onclick="getPotencia(' + nodes._data[params['nodes']].id + ')">Atualizar Potência</button><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id + ')">Obter grafico de consumo</button>';
         console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
         //Mostrar tabela para alterar os atributos
         document.getElementById('tabelaAlt').hidden = "";
         document.getElementById("node-label").value = nodes._data[params['nodes']].label;
-        document.getElementById("node-ip").value = nodes._data[params['nodes']].attributes;
+        document.getElementById("node-topico").value = nodes._data[params['nodes']].attributes;
         document.getElementById("node-id").value = nodes._data[params['nodes']].id;
 
             });
@@ -239,7 +241,8 @@
                 else {
                     if (data.estado == 0) {
 
-                        alert("Módulo esta ocupado no momento!");
+                        document.getElementById("estado").innerHTML = "Potência: " + nodes._data[idNodo].title + "dB";                        
+
                     }
                     else {
                         
@@ -306,5 +309,32 @@
        
     }
 
+    function MudarEstado(idNodo) {
+        $.ajax({
 
+            type: 'GET',
+            url: '/Home/MudarEstado',
+            data: { id: idNodo },
+
+            success: function (data) {
+                if (data == null) {
+                    alert("Não foi possivel obter o grafico!");
+                }
+                else {
+                    if (data.estado == '0') {
+
+                        document.getElementById("estado").innerHTML = "Estado: " + nodes._data[idNodo].attributes ;                        
+                    }
+                    else {
+
+                        drawChart(data);
+                    }
+                }
+
+            },
+            error: function (data) { //linha 
+                alert("Sem conexão com o servidor");
+            }
+        });
+     }
 </script>

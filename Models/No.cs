@@ -8,7 +8,7 @@ namespace WebApplication1.Models
     public class No
     {
         public int id { set; get; }// identificador do no
-        public string label { set; get; }// nome dado na viwe
+        public string label { set; get; }// nome dado na view
         public string title { set; get; }// valor do no
         public string attributes { set; get; }
 

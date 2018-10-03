@@ -223,8 +223,8 @@ namespace WebApplication1.Models
                     Ligacao auxiliarLigacao = new Ligacao();
                     auxiliarNo.id = Convert.ToInt32(dataReader["idmodulo"]);
                     auxiliarNo.label = Convert.ToString(dataReader["nome"]);
-                    auxiliarNo.title = Convert.ToString(dataReader["potencia"]);
-                    auxiliarNo.attributes = Convert.ToString(dataReader["ip"]);
+
+                    auxiliarNo.attributes=Convert.ToString(dataReader["estado"])=="1"? "Ligado" : "Desligado";
                     //if (!dataReader.IsDBNull(1) && !dataReader.IsDBNull(2))
                     //{
                     //    auxiliarLigacao.from = Convert.ToInt32(dataReader["origem_ligacao"]);

@@ -46,7 +46,7 @@ namespace WebApplication1.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Descrição da Aplicação";
-            client_MqttMsgPublish();
+            
             return View();
         }
 
@@ -106,41 +106,34 @@ namespace WebApplication1.Controllers
             if (db.Insert(nome, ip))
             {
 
-
-
-                
                 result = "Salvo com sucesso";
             }
             else result = "Error ao salvar - Tente novamente";
             db = null;
             return result;
         }
+        public void MudarEstado(int id) { client_MqttMsgPublish(); }
+        
 
 
-       
-
-
-
-    
-
-    static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
             DBConnect db = new DBConnect();
             string  teste = Encoding.UTF8.GetString(e.Message);
             db.UpdatePotencia(2, Convert.ToInt32(teste));
         }
-
-        static void client_MqttMsgPublish()
+        
+        public void client_MqttMsgPublish()
         {
             MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
-
+           
             // register to message received 
             client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
 
 
             client.Connect(Guid.NewGuid().ToString());
             client.Publish("/estado", Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            
+            //else client.Publish("/estado", Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
         }
         
         public bool Delete(int id)
