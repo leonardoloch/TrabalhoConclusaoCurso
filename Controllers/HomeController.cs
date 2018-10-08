@@ -88,7 +88,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public string Save(string nome, string ip)
+        public string Save(string nome, string localizacao)
         {
             string result;
             MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
@@ -98,12 +98,12 @@ namespace WebApplication1.Controllers
 
 
             client.Connect(Guid.NewGuid().ToString());
-
+            
             // subscribe to the topic "/home/temperature" with QoS 2 
-            client.Subscribe(new string[] { "/consumo" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            client.Subscribe(new string[] {localizacao+"/"+nome}, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
 
             DBConnect db = new DBConnect();
-            if (db.Insert(nome, ip))
+            if (db.Insert(nome, localizacao))
             {
 
                 result = "Salvo com sucesso";
@@ -112,7 +112,25 @@ namespace WebApplication1.Controllers
             db = null;
             return result;
         }
-        public void MudarEstado(int id) { client_MqttMsgPublish(); }
+        public bool MudarEstado(int id,string est) {
+            MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
+
+            // register to message received 
+            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+
+
+            client.Connect(Guid.NewGuid().ToString());
+            if (est == "Desligado")
+            {
+                client.Publish("/estado", Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            }
+            else
+            { client.Publish("/estado", Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); }
+            DBConnect db = new DBConnect();
+            db.MudarEstado(id, est);
+           
+            return true;
+        }
         
 
 
@@ -123,18 +141,7 @@ namespace WebApplication1.Controllers
             db.UpdatePotencia(2, Convert.ToInt32(teste));
         }
         
-        public void client_MqttMsgPublish()
-        {
-            MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
-           
-            // register to message received 
-            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-
-
-            client.Connect(Guid.NewGuid().ToString());
-            client.Publish("/estado", Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            //else client.Publish("/estado", Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-        }
+       
         
         public bool Delete(int id)
         {

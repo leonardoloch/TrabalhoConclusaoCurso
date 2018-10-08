@@ -28,7 +28,7 @@
     <table id="tabelaAlt" hidden="hidden">
         <tbody>
             <tr>
-                <button>
+                <td>
                     <h2>Módulos</h2>
                     <table>
                         <tbody>
@@ -39,9 +39,9 @@
                             </tr>
                             <tr>
                                 <td></td>
-                                <td>Estado: </td>
-
-                                <button id="node-topico" onclick="MudarTopico();">asdsadsad</button>
+                                <td>Localizacao: </td>
+                                <td><input id="node-localizacao" type="text" value=""></td>
+                                
                             </tr>
                             <tr>
                                 <td></td>
@@ -52,11 +52,7 @@
                                     <button id="node-remove" onclick="removeNode();">Deletar</button>
                                 </td>
                             </tr>
-                            <tr>
-
-
-                                <td><input id="node-id" type="text" value="" hidden="hidden"></td>
-                            </tr>
+                          
                         </tbody>
                     </table>
                 </td>
@@ -95,29 +91,24 @@
     var network = new vis.Network(container, data, options);
 
     network.on("click", function (params) {
+
         document.getElementById('chart_div').hidden = "hidden";
-        params.event = "[original event]";
-        var potencia;
-        if (nodes._data[params['nodes']].title == "") potencia = 'Sem valor no momento atualize o módulo.';
-        else potencia = nodes._data[params['nodes']].title+' W';
+        params.event = "[original event]";       
          document.getElementById('eventSpan').hidden = "";
         document.getElementById('eventSpan').innerHTML =
             '<h2>Informação Sobre o Módulo</h2>' +
             '<h4 id="nome">Nome do Modulo: ' + nodes._data[params['nodes']].label + '</h4>' +
-            '<h4 id="node-estado">' +'Potência: ' + potencia + '</h4>' +
             '<h4>ID: ' + nodes._data[params['nodes']].id + '</h4>' +
-            '<h4 id="estado">Estado: ' +
-        '<button onclick="MudarEstado(' + nodes._data[params['nodes']].id + ')">' + nodes._data[params['nodes']].attributes +'</button>'+
-            '</h4><button onclick="getPotencia(' + nodes._data[params['nodes']].id + ')">Atualizar Potência</button><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id + ')">Obter grafico de consumo</button>';
+            '<h4>Estado:<button id="buttonEstado" onclick="MudarEstado(' + nodes._data[params['nodes']].id +','+ nodes._data[params['nodes']].title + ')">' + nodes._data[params['nodes']].title + '</button></h4>' +
+            '<h4><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id + ')">Obter grafico de consumo</button></h4>';
         console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
         //Mostrar tabela para alterar os atributos
         document.getElementById('tabelaAlt').hidden = "";
         document.getElementById("node-label").value = nodes._data[params['nodes']].label;
-        document.getElementById("node-topico").value = nodes._data[params['nodes']].attributes;
-        document.getElementById("node-id").value = nodes._data[params['nodes']].id;
+        document.getElementById("node-localizacao").value = nodes._data[params['nodes']].attributes;
 
             });
-
+     //------------------------------------------------------------------------------------------
     function getPotencia(idNodo)
     {
 
@@ -153,7 +144,7 @@
         });
 
     }
-
+     //------------------------------------------------------------------------------------------
     function updateNodeSistemaIpNome()
     {
         $.ajax({
@@ -176,7 +167,7 @@
             }
         });
     }
-
+     //------------------------------------------------------------------------------------------
     function updateNode() {
         try {
             nodes.update({
@@ -188,6 +179,7 @@
             alert(err);
         }
     }
+     //------------------------------------------------------------------------------------------
     function removeNode() {
         $.ajax({
             type: 'GET',
@@ -258,7 +250,7 @@
 
 
     }
-
+     //------------------------------------------------------------------------------------------
     function drawChart(value) {
         google.charts.load('current', { 'packages': ['line'] });
         
@@ -308,26 +300,27 @@
 
        
     }
+    //------------------------------------------------------------------------------------------
 
-    function MudarEstado(idNodo) {
+    function MudarEstado(idNodo,estado) {
         $.ajax({
 
             type: 'GET',
             url: '/Home/MudarEstado',
-            data: { id: idNodo },
+            data: { id: idNodo, est:estado },
 
             success: function (data) {
                 if (data == null) {
-                    alert("Não foi possivel obter o grafico!");
+                    alert("Não foi possivel obter o grafico alterar o estado do módulo");
                 }
                 else {
-                    if (data.estado == '0') {
-
-                        document.getElementById("estado").innerHTML = "Estado: " + nodes._data[idNodo].attributes ;                        
+                    if (data == true) {
+                        
+                        document.getElementById("buttonEstado").innerHTML == "Desligado" ? document.getElementById("buttonEstado").innerHTML == "Ligado" : document.getElementById("buttonEstado").innerHTML = "Desligado";                        
                     }
                     else {
 
-                        drawChart(data);
+                        alert("Não foi possivel obter o grafico alterar o estado do módulo");
                     }
                 }
 
@@ -336,5 +329,6 @@
                 alert("Sem conexão com o servidor");
             }
         });
-     }
+    }
+     //------------------------------------------------------------------------------------------
 </script>

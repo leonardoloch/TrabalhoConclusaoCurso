@@ -18,3 +18,14 @@ C:\Users\leonardo\source\repos\WebApplication1\WebApplication1\obj\Debug\netcore
 C:\Users\leonardo\source\repos\WebApplication1\WebApplication1\obj\Debug\netcoreapp2.0\WebApplication1.dll
 C:\Users\leonardo\source\repos\WebApplication1\WebApplication1\obj\Debug\netcoreapp2.0\WebApplication1.pdb
 C:\Users\leonardo\source\repos\WebApplication1\WebApplication1\obj\Debug\netcoreapp2.0\WebApplication1.csprojResolveAssemblyReference.cache
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.dll
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.pdb
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\bin\Debug\netcoreapp2.0\WebApplication1.deps.json
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\bin\Debug\netcoreapp2.0\WebApplication1.runtimeconfig.json
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\bin\Debug\netcoreapp2.0\WebApplication1.runtimeconfig.dev.json
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\bin\Debug\netcoreapp2.0\WebApplication1.dll
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\bin\Debug\netcoreapp2.0\WebApplication1.pdb
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.csprojAssemblyReference.cache
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.csproj.CoreCompileInputs.cache
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.AssemblyInfoInputs.cache
+C:\Desenvolvimento\Servidor-Tcc\TrabalhoConclusaoCurso\obj\Debug\netcoreapp2.0\WebApplication1.AssemblyInfo.cs

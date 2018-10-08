@@ -26,9 +26,9 @@ namespace WebApplication1.Models
         private void Initialize()
         {
             server = "localhost";
-            database = "projeto_de_sistemas_embarcados";
+            database = "trabalhoconclusaocurso";
             uid = "root";
-            password = "";
+            password = "root";
             string connectionString;
             connectionString = "Database=" +
             database + ";" + "Server=" + server + ";" + "Uid=" + uid + ";" + "Pwd=" + password + "; CharSet=utf8;port=3306;SslMode=none";
@@ -89,12 +89,12 @@ namespace WebApplication1.Models
         }
 
         //Insert statement
-        public bool Insert(string nome, string ip)
+        public bool Insert(string nome, string localizacao)
         {
             bool result = false;
             string query;
 
-            query = "INSERT INTO modulo (nome,ip) VALUES('" + nome + "','" + ip + "'" + ")";
+            query = "INSERT INTO modulo (nome,localizacao,estado) VALUES('" + nome + "','" + localizacao + "'" + ",0)";
 
             //open connection
             if (this.OpenConnection() == true)
@@ -197,6 +197,38 @@ namespace WebApplication1.Models
             return result;
         }
 
+        public void MudarEstado(int id, string est)
+        {
+            int x = est == "Ligado" ? 1 : 0;
+            string query = "update modulo set estado = "+x+" where idmodulo =" + id;
+
+            //Create a list to store the result
+
+
+            //Open connection
+            if (this.OpenConnection())
+            {
+                //Create Command
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                //Create a data reader and Execute the command
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                //Read the data and store them in the list
+               
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+
+            }
+        }
+
+
+    
+
         //Select statement
         public Modulo Select()
         {
@@ -223,8 +255,8 @@ namespace WebApplication1.Models
                     Ligacao auxiliarLigacao = new Ligacao();
                     auxiliarNo.id = Convert.ToInt32(dataReader["idmodulo"]);
                     auxiliarNo.label = Convert.ToString(dataReader["nome"]);
-
-                    auxiliarNo.attributes=Convert.ToString(dataReader["estado"])=="1"? "Ligado" : "Desligado";
+                    auxiliarNo.attributes = Convert.ToString(dataReader["localizacao"]);
+                    auxiliarNo.title=Convert.ToInt32(dataReader["estado"])==1? "Ligado" : "Desligado";
                     //if (!dataReader.IsDBNull(1) && !dataReader.IsDBNull(2))
                     //{
                     //    auxiliarLigacao.from = Convert.ToInt32(dataReader["origem_ligacao"]);
