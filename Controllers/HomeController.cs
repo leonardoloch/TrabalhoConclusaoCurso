@@ -38,7 +38,7 @@ namespace WebApplication1.Controllers
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             return View();
         }
-        public IActionResult teste()
+        public IActionResult login()
         {
             return View();
         }
@@ -84,7 +84,24 @@ namespace WebApplication1.Controllers
             Modulo modulo;
             modulo = db.Select();
             ViewBag.No = modulo.nos;
+            //return RedirectToAction("Modulos", "Home", new { area = "" });
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult RedirectToAboutWithAjax()
+        {
+            try
+            {
+
+                //in a real world, here will be multiple database calls - or others
+                return Json(new { success = true, newurl = Url.Action("Modulos") });
+            }
+            catch (Exception ex)
+            {
+                //TODO: log
+                return Json(new { ok = false, message = ex.Message });
+            }
         }
 
         [HttpGet]
@@ -112,24 +129,27 @@ namespace WebApplication1.Controllers
             db = null;
             return result;
         }
-        public bool MudarEstado(int id,string est) {
+        public int MudarEstado(int id) {
             MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
 
             // register to message received 
             client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
 
+            DBConnect db = new DBConnect();
+
+            No no = db.getModulo(id);
 
             client.Connect(Guid.NewGuid().ToString());
-            if (est == "Desligado")
+            if (no.title == "0")
             {
-                client.Publish("/estado", Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+                client.Publish(no.attributes+"/"+no.label, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
             }
             else
-            { client.Publish("/estado", Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); }
-            DBConnect db = new DBConnect();
-            db.MudarEstado(id, est);
+            { client.Publish(no.attributes + "/" + no.label, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); }
+            
+            db.MudarEstado(id, Convert.ToInt32(no.title));
            
-            return true;
+            return Convert.ToInt32(no.title);
         }
         
 
@@ -138,7 +158,7 @@ namespace WebApplication1.Controllers
         {
             DBConnect db = new DBConnect();
             string  teste = Encoding.UTF8.GetString(e.Message);
-            db.UpdatePotencia(2, Convert.ToInt32(teste));
+            db.SetConsumo(e.Topic, Convert.ToInt32(teste));
         }
         
        
@@ -185,7 +205,7 @@ namespace WebApplication1.Controllers
             flag = true;
             if (resposta.Equals("")) return null;
             int potencia = json.SelectToken(@"potencia").Value<int>();
-            db.UpdatePotencia(id, potencia);
+            //db.UpdatePotencia(id, potencia);
             return json;
 
         }
@@ -213,8 +233,23 @@ namespace WebApplication1.Controllers
 
             flag = false;
         }
+        [HttpGet]
+        public bool ValidarAcesso(string nome,string pass)
+        {
+            bool flag = false;
 
-      
+
+            return false;
+
+
+        }
+        [HttpGet]
+        public bool RegistroUsuario(string nome,string pass,string email) {
+
+
+            return true;
+
+        }
 
     }
 }

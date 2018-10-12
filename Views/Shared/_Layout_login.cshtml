@@ -1,11 +1,12 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Projeto de Sistemas Embarcados</title>
-   
-    
+
+
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
         <link rel="stylesheet" href="~/css/site.css" />
@@ -32,21 +33,18 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Inicio</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Modulos">Módulos</a></li>
+                 
                     <li><a asp-area="" asp-controller="Home" asp-action="CadastroModulo">Cadastro de Módulos</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">Sobre</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Historico">Historico</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contato</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="login">login</a></li>
+                  
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container body-content" >
+    <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p > Projeto de Monitoramento Consumo de Energia Elétrica</p>
+            <p> Projeto de Monitoramento Consumo de Energia Elétrica</p>
         </footer>
     </div>
 

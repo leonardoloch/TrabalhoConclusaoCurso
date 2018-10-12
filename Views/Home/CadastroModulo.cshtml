@@ -1,4 +1,7 @@
 ﻿
+@{
+    Layout = "_Layout";
+}
 
 <html>
 <head>
@@ -9,47 +12,47 @@
 
         <link rel="stylesheet" href="~/css/vis.css" />
     </environment>
-   
+
 </head>
 <body>
-   
-      
-        <div class="row">
-            <label class="required" for="name">Nome do Modulo:</label><br />
-            <input id="nome" class="input" name="name" type="text" value="" size="30" /><br />
-            <span id="name_validation" class="error_message"></span>
-        </div>
-        <div class="row">
-            <label class="required" >Localização do modulo:</label><br />
-            <input id="localizacao"  class="input" type="text" value="" size="30" /><br />
-            
-        </div>
-       
-       <button onclick="salvarModulo()">Salvar</button>
-    
-    
+
+
+    <div class="row">
+        <label class="required" for="name">Nome do Modulo:</label><br />
+        <input id="nome" class="input" name="name" type="text" value="" size="30" /><br />
+        <span id="name_validation" class="error_message"></span>
+    </div>
+    <div class="row">
+        <label class="required">Localização do modulo:</label><br />
+        <input id="localizacao" class="input" type="text" value="" size="30" /><br />
+
+    </div>
+
+    <button onclick="salvarModulo()">Salvar</button>
+
+
 </body>
 </html>
 <script type="text/javascript">
 
     function salvarModulo() {
-        
-            $.ajax({
-                type: 'GET',
-                url: '/Home/Save',
-                data: { nome: nome.value, localizacao: localizacao.value },
-                success: function (data) {
-                    
-                        alert(data);
-                },
-                error: function (data) { //linha 14
-                    alert("Sem conexão com o servidor");
-                }
-            });
-        
+
+        $.ajax({
+            type: 'GET',
+            url: '/Home/Save',
+            data: { nome: nome.value, localizacao: localizacao.value },
+            success: function (data) {
+
+                alert(data);
+            },
+            error: function (data) { //linha 14
+                alert("Sem conexão com o servidor");
+            }
+        });
+
 
     }
 
-  
+
 </script>
 

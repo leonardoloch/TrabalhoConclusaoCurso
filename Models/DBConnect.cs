@@ -113,15 +113,17 @@ namespace WebApplication1.Models
         }
 
         //Update statement
-        public bool UpdatePotencia(int id, int potencia)
+        public void SetConsumo(string topico, int potencia)
         {
-            string query = "UPDATE modulo SET potencia=" + potencia + " WHERE idmodulo=" + id;
-            bool flag = false;
+            string[] itemValores = topico.Split('/');
+
+            string query = "UPDATE consumo c JOIN modulo m ON c.idmodulo = m.idmodulo SET c.valor =" + 11 +
+            "where m.idconsumo = " + 1 + "and m.localizacao =" + itemValores[0] + "and m.nome = " + itemValores[1];
+            
             //Open connection
             if (this.OpenConnection() == true)
             {
-                try
-                {
+                
                     //create mysql command
                     MySqlCommand cmd = new MySqlCommand();
                     //Assign the query using CommandText
@@ -134,14 +136,11 @@ namespace WebApplication1.Models
 
                     //close connection
                     this.CloseConnection();
-                    flag = true;
-                }
-                catch
-                {
-
-                }
+                  
+                
+               
             }
-            return flag;
+       
         }
 
         public bool UpdateNomeIp(int id, string ip, string nome)
@@ -197,13 +196,11 @@ namespace WebApplication1.Models
             return result;
         }
 
-        public void MudarEstado(int id, string est)
+        public void MudarEstado(int id, int estado)
         {
-            int x = est == "Ligado" ? 1 : 0;
-            string query = "update modulo set estado = "+x+" where idmodulo =" + id;
 
-            //Create a list to store the result
-
+            string x = (estado == 0) ? "1" : "0";
+            string query = "update modulo set estado = " + x + " where idmodulo =" + id;
 
             //Open connection
             if (this.OpenConnection())
@@ -214,7 +211,7 @@ namespace WebApplication1.Models
                 MySqlDataReader dataReader = cmd.ExecuteReader();
 
                 //Read the data and store them in the list
-               
+
                 //close Data Reader
                 dataReader.Close();
 
@@ -227,7 +224,7 @@ namespace WebApplication1.Models
         }
 
 
-    
+
 
         //Select statement
         public Modulo Select()
@@ -256,7 +253,7 @@ namespace WebApplication1.Models
                     auxiliarNo.id = Convert.ToInt32(dataReader["idmodulo"]);
                     auxiliarNo.label = Convert.ToString(dataReader["nome"]);
                     auxiliarNo.attributes = Convert.ToString(dataReader["localizacao"]);
-                    auxiliarNo.title=Convert.ToInt32(dataReader["estado"])==1? "Ligado" : "Desligado";
+                    auxiliarNo.title = Convert.ToInt32(dataReader["estado"]) == 1 ? "Ligado" : "Desligado";
                     //if (!dataReader.IsDBNull(1) && !dataReader.IsDBNull(2))
                     //{
                     //    auxiliarLigacao.from = Convert.ToInt32(dataReader["origem_ligacao"]);
@@ -365,12 +362,12 @@ namespace WebApplication1.Models
 
         public void getConsumo(int idmodulo, List<Consumo> consumos)
         {
-       
-            string query = "select * from consumo where idmodulo="+ idmodulo;
+
+            string query = "select * from consumo where idmodulo=" + idmodulo;
 
             //Create a list to store the result
 
-            
+
             //Open connection
             if (this.OpenConnection())
             {
@@ -382,14 +379,14 @@ namespace WebApplication1.Models
                 //Read the data and store them in the list
                 while (dataReader.Read())
                 {
-                    
 
-                  
 
-                    consumos.Add(new Consumo() { valor= Convert.ToInt32(dataReader["valor"]), data = Convert.ToString(dataReader["data"]) });
+
+
+                    consumos.Add(new Consumo() { valor = Convert.ToInt32(dataReader["valor"]), data = Convert.ToString(dataReader["data"]) });
                     //ligacao.Add(auxiliarLigacao);
                 }
-           
+
 
                 //close Data Reader
                 dataReader.Close();
@@ -398,12 +395,46 @@ namespace WebApplication1.Models
                 this.CloseConnection();
 
                 //return list to be displayed
-               
-            }
-           
 
+            }
+
+
+        }
+        public No getModulo(int id)
+        {
+
+            string query = "select nome,localizacao,estado from modulo where idmodulo=" + id;
+
+            //Create a list to store the result
+            No no= new No();
             
-           
+            //Open connection
+            if (this.OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                    //Create Command
+                   
+                    //Create a data reader and Execute the command
+                   
+
+                    //Read the data and store them in the list
+
+                    no.label = Convert.ToString(dataReader["nome"]);
+                    no.attributes = Convert.ToString(dataReader["localizacao"]);
+                    no.title = Convert.ToString(dataReader["estado"]);
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+            }
+            return no;
         }
 
     }

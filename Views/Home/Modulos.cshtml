@@ -99,7 +99,7 @@
             '<h2>Informação Sobre o Módulo</h2>' +
             '<h4 id="nome">Nome do Modulo: ' + nodes._data[params['nodes']].label + '</h4>' +
             '<h4>ID: ' + nodes._data[params['nodes']].id + '</h4>' +
-            '<h4>Estado:<button id="buttonEstado" onclick="MudarEstado(' + nodes._data[params['nodes']].id +','+ nodes._data[params['nodes']].title + ')">' + nodes._data[params['nodes']].title + '</button></h4>' +
+            '<h4>Estado:<button id="buttonEstado" onclick="MudarEstado(' + nodes._data[params['nodes']].id + ')">' + nodes._data[params['nodes']].title + '</button></h4>' +
             '<h4><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id + ')">Obter grafico de consumo</button></h4>';
         console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
         //Mostrar tabela para alterar os atributos
@@ -314,10 +314,9 @@
                     alert("Não foi possivel obter o grafico alterar o estado do módulo");
                 }
                 else {
-                    if (data == true) {
-                        
-                        document.getElementById("buttonEstado").innerHTML == "Desligado" ? document.getElementById("buttonEstado").innerHTML == "Ligado" : document.getElementById("buttonEstado").innerHTML = "Desligado";                        
-                    }
+                    if (data == 1) document.getElementById("buttonEstado").innerHTML = "Desligado";      
+                    else if (data == 0) document.getElementById("buttonEstado").innerHTML = "Ligado";      
+                    
                     else {
 
                         alert("Não foi possivel obter o grafico alterar o estado do módulo");

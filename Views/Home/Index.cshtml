@@ -1,14 +1,167 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿
+<!DOCTYPE html>
+<html>
+<head>
 
-<div class="item active">
-    <a class="btn btn-default" href="http://ararangua.ufsc.br/">
-        <img src="~/images/brasao_UFSC_ararangua_horizontal_WEB.jpg" class="img-responsive" />
-    </a>
-    
-    <div class="carousel-caption" role="option">
-      
+    <link rel="stylesheet" type="text/css" href="~/css/form.css">
+</head>
+<body>
+
+    <div class="login-wrap">
+        <div class="login-html">
+            <input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Acessar</label>
+            <input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Cadastra</label>
+            <div class="login-form">
+                <div class="sign-in-htm">
+                    <form name="formAcesso">
+                        <div class="group">
+                            <label for="user" class="label">Username</label>
+                            <input id="user" type="text" class="input">
+                        </div>
+                        <div class="group">
+                            <label for="pass" class="label">Password</label>
+                            <input id="pass" type="password" class="input" data-type="password">
+                        </div>
+
+
+                    </form>
+                    <div class="group">
+                        <button class="button" value="Sign In" onclick="validateForm()">Acessar</button>
+                    </div>
+                </div>
+                <div class="sign-up-htm">
+                    <form name="formRegistro" >
+                        <div class="group">
+                            <label for="user" class="label">Username</label>
+                            <input id="userRegister" type="text" class="input">
+                        </div>
+                        <div class="group">
+                            <label for="pass" class="label">Password</label>
+                            <input id="passRegister" type="password" class="input" data-type="password">
+                        </div>
+                        <div class="group">
+                            <label for="pass1" class="label">Repeat Password</label>
+                            <input id="passRegister1" type="password" class="input" data-type="password">
+                        </div>
+                        <div class="group">
+                            <label for="email" class="label">Email Address</label>
+                            <input id="email" type="text" class="input">
+                        </div>
+                        <div class="group">
+                            <button class="button" value="Sign In" onclick="SalvarRegistro()">Registrar</button>
+                        </div>
+                        <div class="hr"></div>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-      
+
+</body>
+
+</html>
+<script>
+
+    //------------------------------------------------------------------------------------------
+    function SalvarRegistro()
+    {
+
+        
+        $.ajax({
+
+            type: 'GET',
+            url: '/Home/RegistroUsuario',
+            data: { nome: document.forms["formRegistro"]["userRegister"].value, pass: document.forms["formRegistro"]["passRegister"].value, email: document.forms["formRegistro"]["email"].value },
+
+            success: function (data) {
+
+                if (!data) {
+                    alert("Senhas não conferem");
+                    return false;
+                }
+                else {
+                    alert("Bem-Vindo");
+                    $.ajax({
+
+                        type: 'GET',
+                        url: '/Home/Modulos',
+                        data: {},
+
+                        success: function (data) {
+
+
+
+                        },
+                        error: function (data) { //linha
+
+                            alert("Sem conexão com o servidor");
+
+                        }
+                    });
+                }
+
+            },
+            error: function (data) { //linha
+                return false;
+                alert("Sem conexão com o servidor");
+
+            }
+        });
+
+    }
+
+
+    function validateForm() {
+        //document.location.href = 'login.aspx', true
+       
+        //window.location.replace("http:\\stackoverflow.com");
+        
+       
+        $.ajax({
+
+            type: 'GET',
+            url: '/Home/ValidarAcesso',
+            data: { nome: document.formAcesso.pass.user, pass: document.formAcesso.pass.value },
+
+            success: function (data) {
+
+                if (data) {
+                    alert("Nome ou Senha incorreta");
+                    return false;
+                }
+                else {
+                    alert("Acesso");
+                    data = null;
+                    $.ajax({
+
+                        type: 'Post',
+                        url: '/Home/RedirectToAboutWithAjax',
+                        data: {},
+
+                        success: function (data) {
+                            document.location.href = '/Home/Modulos';
+                            document.location.href = data.newurl;
+                            
+                        },
+                        error: function (data) { //linha
+                            alert("Sem conexão com o servidor");
+
+                        }
+                    });
+                }
+
+            },
+            error: function (data) { //linha
+                return false;
+                alert("Sem conexão com o servidor");
+
+            }
+        });
+        
+    }
+
+    
+
+</script>
