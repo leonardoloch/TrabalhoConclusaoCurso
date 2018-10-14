@@ -1,6 +1,7 @@
 ﻿
 @{
     Layout = "_Layout";
+ 
 }
 
 <html>
@@ -23,24 +24,32 @@
         <span id="name_validation" class="error_message"></span>
     </div>
     <div class="row">
-        <label class="required">Localização do modulo:</label><br />
-        <input id="localizacao" class="input" type="text" value="" size="30" /><br />
+        <th>@Html.Label("Localização do modulo: ")</th></br>
+        <td size="30">@Html.DropDownList("comodo", Modulo.GetProvincesList())<span class="required" ></span></td>
+
+    </div>
+    <div class="row">
+        <label class="required">Outra Localização do modulo:</label><br />
+        <input id="localizacao" class="input"  name="text" type="text" value="" size="30" /><br />
+        <span id="name_validation" class="error_message"></span>
 
     </div>
 
-    <button onclick="salvarModulo()">Salvar</button>
-
-
+    </br><button onclick="salvarModulo()">Salvar</button>
+    
 </body>
 </html>
 <script type="text/javascript">
-
+    var localizacao_, novo, idLocalizacao;
     function salvarModulo() {
-
+        if (localizacao.value != "") { localizacao_ = localizacao.value; novo = true, idLocalizacao = 0 }
+        else {
+            localizacao_ = comodo[comodo.selectedIndex].text; novo = false, idLocalizacao = comodo.value
+        }
         $.ajax({
             type: 'GET',
             url: '/Home/Save',
-            data: { nome: nome.value, localizacao: localizacao.value },
+            data: { nome: nome.value, localizacao_, novo,idLocalizacao },
             success: function (data) {
 
                 alert(data);

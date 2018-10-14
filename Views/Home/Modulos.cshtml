@@ -1,6 +1,7 @@
 ﻿@{
     var modulos = ViewBag.No;
     var ligacoes = ViewBag.Ligacoes;
+    Layout = "_Layout";
 }
 
 <html>
@@ -19,6 +20,7 @@
             border: 1px solid lightgray;
         }
     </style>
+
 </head>
 <body>
     <div class="vis-config-header"><h3>Módulos Disponiveis</h3></div>
@@ -91,14 +93,14 @@
     var network = new vis.Network(container, data, options);
 
     network.on("click", function (params) {
-
+        if (params.items.length != 0 && nodes._data[params['nodes']].tipo != 0) {
         document.getElementById('chart_div').hidden = "hidden";
         params.event = "[original event]";       
          document.getElementById('eventSpan').hidden = "";
         document.getElementById('eventSpan').innerHTML =
             '<h2>Informação Sobre o Módulo</h2>' +
             '<h4 id="nome">Nome do Modulo: ' + nodes._data[params['nodes']].label + '</h4>' +
-            '<h4>ID: ' + nodes._data[params['nodes']].id + '</h4>' +
+            '<h4 id="id" hidden="hidden">' + nodes._data[params['nodes']].id + '</h4>' +
             '<h4>Estado:<button id="buttonEstado" onclick="MudarEstado(' + nodes._data[params['nodes']].id + ')">' + nodes._data[params['nodes']].title + '</button></h4>' +
             '<h4><button onclick="getValueHistoric(' + nodes._data[params['nodes']].id + ')">Obter grafico de consumo</button></h4>';
         console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
@@ -106,8 +108,11 @@
         document.getElementById('tabelaAlt').hidden = "";
         document.getElementById("node-label").value = nodes._data[params['nodes']].label;
         document.getElementById("node-localizacao").value = nodes._data[params['nodes']].attributes;
+        }
+        else document.getElementById('eventSpan').hidden = "hidden";
+    });
 
-            });
+
      //------------------------------------------------------------------------------------------
     function getPotencia(idNodo)
     {
@@ -253,15 +258,24 @@
      //------------------------------------------------------------------------------------------
     function drawChart(value) {
         google.charts.load('current', { 'packages': ['line'] });
-        
+
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Day');
-        data.addColumn('number', '2015');
-        //data.addColumn('number', '2016');
-        //data.addColumn('number', '2017');
-        var DaysEnum =[ 'Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.' , 'Nov.', 'Dez.'];
-        var x = 2015;
-        //data.addRows(JSON.parse(value).operations);
+        data.addColumn('number', 'Consumo [W/h]');
+
+        var DaysEnum = ['Jan. ', 'Fev. ', 'Mar. ', 'Abr. ', 'Mai. ', 'Jun. ', 'Jul. ', 'Ago. ', 'Set. ', 'Out. ', 'Nov. ', 'Dez. '];
+
+        for (var i = 0; i < JSON.parse(value).consumos.length; i++) {
+            data.addRow([DaysEnum[parseInt(JSON.parse(value).consumos[i].data.slice(5, 7)) - 1] + JSON.parse(value).consumos[i].data.slice(0, 4), JSON.parse(value).consumos[i].valor]);
+            
+
+        }
+
+        
+       // data.addRows([Object.values(JSON.parse(value).consumos)        ]);
+        //data.addRows(2);
+
+        /*
         data.addRows([
             Object.values(JSON.parse(value).operations[0]),
             Object.values(JSON.parse(value).operations[1]),
@@ -275,7 +289,7 @@
             Object.values(JSON.parse(value).operations[9]),
             Object.values(JSON.parse(value).operations[10]),
             Object.values(JSON.parse(value).operations[11])
-        ]);
+        ]);*/
        
 
         
@@ -314,8 +328,8 @@
                     alert("Não foi possivel obter o grafico alterar o estado do módulo");
                 }
                 else {
-                    if (data == 1) document.getElementById("buttonEstado").innerHTML = "Desligado";      
-                    else if (data == 0) document.getElementById("buttonEstado").innerHTML = "Ligado";      
+                    if (data == 1) { document.getElementById("buttonEstado").innerHTML = "Desligado"; nodes.update([{ id: parseInt(document.getElementById("id").innerHTML), color:  '#00FF80'}]);}     
+                    else if (data == 0) { document.getElementById("buttonEstado").innerHTML = "Ligado"; nodes.update([{ id: parseInt(document.getElementById("id").innerHTML), color: '#FA5858'  }])}
                     
                     else {
 

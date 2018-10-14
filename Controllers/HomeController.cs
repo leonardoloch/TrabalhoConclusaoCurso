@@ -21,11 +21,14 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebApplication1.Controllers
 {
     public class HomeController : Controller
     {
+
+        public static Usuario user=new Usuario();
 
         public string resposta;
         public bool flag;
@@ -36,6 +39,7 @@ namespace WebApplication1.Controllers
         {
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+           
             return View();
         }
         public IActionResult login()
@@ -50,6 +54,13 @@ namespace WebApplication1.Controllers
             return View();
         }
 
+        public IActionResult InformacaoUsuario()
+        {
+            ViewData["Nome"] = user.Nome;
+            ViewData["codigo"] = user.Id;
+            return View();
+        }
+
         public IActionResult Contact()
         {
             ViewData["Message"] = "Meu contato";
@@ -61,10 +72,14 @@ namespace WebApplication1.Controllers
         {
             ViewData["Message"] = "Your contact page.";
 
+            
+            
+                
+
             return View();
         }
 
-
+      
         public IActionResult Historico()
 
 
@@ -76,38 +91,24 @@ namespace WebApplication1.Controllers
 
 
         public IActionResult Modulos()
-
-
         {
-
             DBConnect db = new DBConnect();
             Modulo modulo;
-            modulo = db.Select();
+            modulo = db.Select(user.Id);
             ViewBag.No = modulo.nos;
-            //return RedirectToAction("Modulos", "Home", new { area = "" });
+            ViewBag.Ligacoes = modulo.ligacoes;
+
             return View();
         }
 
-        [HttpPost]
-        public ActionResult RedirectToAboutWithAjax()
-        {
-            try
-            {
-
-                //in a real world, here will be multiple database calls - or others
-                return Json(new { success = true, newurl = Url.Action("Modulos") });
-            }
-            catch (Exception ex)
-            {
-                //TODO: log
-                return Json(new { ok = false, message = ex.Message });
-            }
-        }
-
         [HttpGet]
-        public string Save(string nome, string localizacao)
+        public string Save(string nome, string localizacao_,bool novo,int idLocalizacao)
         {
             string result;
+            DBConnect db = new DBConnect();
+            int idLocal = idLocalizacao;
+            if (novo) idLocal = db.SaveLocalizacao(localizacao_);
+
             MqttClient client = new MqttClient("test.mosquitto.org", 1883, false, null, null, MqttSslProtocols.None);
 
             // register to message received 
@@ -117,10 +118,10 @@ namespace WebApplication1.Controllers
             client.Connect(Guid.NewGuid().ToString());
             
             // subscribe to the topic "/home/temperature" with QoS 2 
-            client.Subscribe(new string[] {localizacao+"/"+nome}, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            client.Subscribe(new string[] { user.Id +"/"+localizacao_ + "/"+nome}, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
 
-            DBConnect db = new DBConnect();
-            if (db.Insert(nome, localizacao))
+            
+            if (db.Insert(nome, localizacao_,user.Id, idLocal))
             {
 
                 result = "Salvo com sucesso";
@@ -142,10 +143,10 @@ namespace WebApplication1.Controllers
             client.Connect(Guid.NewGuid().ToString());
             if (no.title == "0")
             {
-                client.Publish(no.attributes+"/"+no.label, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+                client.Publish(user.Id +"/"+no.attributes+"/"+no.label, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
             }
             else
-            { client.Publish(no.attributes + "/" + no.label, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); }
+            { client.Publish(user.Id + "/" + no.attributes + "/" + no.label, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); }
             
             db.MudarEstado(id, Convert.ToInt32(no.title));
            
@@ -173,14 +174,19 @@ namespace WebApplication1.Controllers
         }
 
 
+
         public string AtualizarConsumo(int id)
         {
             DBConnect db = new DBConnect();
             List<Consumo> consumos = new List<Consumo>();
             db.getConsumo(id,consumos);
-            var json = JsonConvert.SerializeObject(new
+            
+
+            string json = JsonConvert.SerializeObject(new
             {
-                operations = consumos
+       
+       consumos
+   
             });
             /* 
             json =  JObject.([
@@ -193,22 +199,6 @@ namespace WebApplication1.Controllers
 
         }
         
-            public JObject GetHistoric(int id)
-        {
-
-            flag = true;
-            DBConnect db = new DBConnect();
-            string ip = db.getIP(id);
-            if (ip.Equals("")) return null;
-            AccessTheWebAsync(ip);
-            while (flag) ;
-            flag = true;
-            if (resposta.Equals("")) return null;
-            int potencia = json.SelectToken(@"potencia").Value<int>();
-            //db.UpdatePotencia(id, potencia);
-            return json;
-
-        }
         public bool AtualizarInformacao(int id,string nome,string ip)
         {
             
@@ -216,40 +206,31 @@ namespace WebApplication1.Controllers
             return  db.UpdateNomeIp(id, ip, nome);
 
         }
-
-
-        public async void AccessTheWebAsync(string ip)
-        {
-            json = null;
-            resposta = "";
-            try
-            {
-                HttpClient client = new HttpClient();            
-                Task<string> getStringTask = client.GetStringAsync("http://"+ip+"");
-                resposta = await getStringTask;
-                json = JObject.Parse(resposta); 
-                }
-            catch (Exception e) { }
-
-            flag = false;
-        }
+        
         [HttpGet]
         public bool ValidarAcesso(string nome,string pass)
         {
-            bool flag = false;
-
-
-            return false;
-
-
+            
+            DBConnect db = new DBConnect();
+            int id = db.ValidarAcesso(nome, pass);
+            if (id == 0) return false;   
+            
+            user.Nome = nome; user.Senha = pass; user.Id=id;
+            return true;
         }
         [HttpGet]
-        public bool RegistroUsuario(string nome,string pass,string email) {
+        public int RegistroUsuario(string nome,string pass,string email) {
 
-
-            return true;
+            user.Nome = nome;user.Senha = pass;user.Email = email;
+            DBConnect db = new DBConnect();
+            user.Id= db.RegistroUsuario(nome, pass, email);
+            return user.Id;
 
         }
 
+    }
+
+    class user
+    {
     }
 }

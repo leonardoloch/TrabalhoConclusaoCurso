@@ -11,6 +11,9 @@ namespace WebApplication1.Models
         public string label { set; get; }// nome dado na view
         public string title { set; get; }// valor do no
         public string attributes { set; get; }
+        public int tipo { set; get; }
+        public string color { set; get; }
+
 
 
 

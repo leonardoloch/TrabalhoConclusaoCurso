@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MySql.Data.MySqlClient;
 using Neat.Procedure;
+using WebApplication1.Controllers;
 
 namespace WebApplication1.Models
 {
@@ -88,14 +90,15 @@ namespace WebApplication1.Models
             }
         }
 
+
         //Insert statement
-        public bool Insert(string nome, string localizacao)
+        public bool Insert(string nome, string localizacao,int idUsuario,int idLocal)
         {
             bool result = false;
             string query;
 
-            query = "INSERT INTO modulo (nome,localizacao,estado) VALUES('" + nome + "','" + localizacao + "'" + ",0)";
-
+            query = "INSERT INTO modulo (nome,localizacao,estado,idusuario,tipo) VALUES('" + nome + "','" + localizacao + "'" + ",0,"+idUsuario+",1);";
+            query += "INSERT INTO ligacao (idmodulo,para) values ((select Max(idmodulo) from modulo),"+ idLocal + ")";
             //open connection
             if (this.OpenConnection() == true)
             {
@@ -117,9 +120,11 @@ namespace WebApplication1.Models
         {
             string[] itemValores = topico.Split('/');
 
-            string query = "UPDATE consumo c JOIN modulo m ON c.idmodulo = m.idmodulo SET c.valor =" + 11 +
-            "where m.idconsumo = " + 1 + "and m.localizacao =" + itemValores[0] + "and m.nome = " + itemValores[1];
-            
+            string today =  DateTime.Now.Month.ToString()+"/"+ DateTime.Now.Year.ToString();
+            string query = "INSERT INTO consumo(idmodulo, data, valor) select idmodulo,STR_TO_DATE('" + today+ "' , ' %m/%Y'), " + potencia +" from modulo m join usuario u on m.idusuario = u.idusuario  where u.idusuario ="+ Convert.ToInt32(itemValores[0]) + " and m.localizacao = '"+ itemValores [1]+ "' and m.nome = '"+ itemValores [2]+ "' ON DUPLICATE KEY UPDATE consumo.valor = consumo.valor + "+potencia;
+            //query= query.Replace("\", "");
+
+
             //Open connection
             if (this.OpenConnection() == true)
             {
@@ -227,15 +232,19 @@ namespace WebApplication1.Models
 
 
         //Select statement
-        public Modulo Select()
+        public Modulo Select(int id)
         {
-            string query = "select * from modulo";
+            string query = "select modulo.tipo,modulo.idmodulo,modulo.nome,localizacao,estado,para from   modulo join usuario on modulo.idusuario=usuario.idusuario left join ligacao l on l.idmodulo = modulo.idmodulo where usuario.idusuario=" + id;
 
             //Create a list to store the result
 
             Modulo modulo = new Modulo();
             List<No> lista = new List<No>();
             List<Ligacao> ligacao = new List<Ligacao>();
+            No auxiliarNo = new No();
+            Ligacao auxiliarLigacao = new Ligacao();
+            auxiliarNo.id = 0;auxiliarNo.label = "Casa";
+            lista.Add(auxiliarNo);
             //Open connection
             if (this.OpenConnection() == true)
             {
@@ -248,20 +257,28 @@ namespace WebApplication1.Models
                 while (dataReader.Read())
                 {
 
-                    No auxiliarNo = new No();
-                    Ligacao auxiliarLigacao = new Ligacao();
+                    auxiliarNo = new No();
+                    auxiliarLigacao = new Ligacao();
                     auxiliarNo.id = Convert.ToInt32(dataReader["idmodulo"]);
                     auxiliarNo.label = Convert.ToString(dataReader["nome"]);
-                    auxiliarNo.attributes = Convert.ToString(dataReader["localizacao"]);
-                    auxiliarNo.title = Convert.ToInt32(dataReader["estado"]) == 1 ? "Ligado" : "Desligado";
-                    //if (!dataReader.IsDBNull(1) && !dataReader.IsDBNull(2))
-                    //{
-                    //    auxiliarLigacao.from = Convert.ToInt32(dataReader["origem_ligacao"]);
-                    //    auxiliarLigacao.to = Convert.ToInt32(dataReader["destino_ligacao"]);
-                    //}
+                    auxiliarLigacao.from = Convert.ToInt32(dataReader["idmodulo"]);
+                    auxiliarNo.tipo = Convert.ToInt32(dataReader["tipo"]);
+                    if (auxiliarNo.tipo == 1)
+                    {
+                        auxiliarLigacao.to = Convert.ToInt32(dataReader["para"]);
+                        auxiliarNo.attributes = Convert.ToString(dataReader["localizacao"]);
+                        auxiliarNo.title = Convert.ToInt32(dataReader["estado"]) == 1 ? "Ligado" : "Desligado";
+                        if (Convert.ToInt32(dataReader["estado"]) == 1) auxiliarNo.color = "#FA5858";
+                        else auxiliarNo.color = "#00FF80";
+                    }
+                    else
+                    {
+                        auxiliarNo.color = "#F2F5A9";
+                        auxiliarLigacao.to = 0;
 
+                    }                                        
                     lista.Add(auxiliarNo);
-                    //ligacao.Add(auxiliarLigacao);
+                    ligacao.Add(auxiliarLigacao);
                 }
                 modulo.nos = lista;
                 modulo.ligacoes = ligacao;
@@ -363,7 +380,7 @@ namespace WebApplication1.Models
         public void getConsumo(int idmodulo, List<Consumo> consumos)
         {
 
-            string query = "select * from consumo where idmodulo=" + idmodulo;
+            string query = "select cast(data as char) as data,valor from consumo where idmodulo=" + idmodulo;
 
             //Create a list to store the result
 
@@ -375,7 +392,6 @@ namespace WebApplication1.Models
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 //Create a data reader and Execute the command
                 MySqlDataReader dataReader = cmd.ExecuteReader();
-
                 //Read the data and store them in the list
                 while (dataReader.Read())
                 {
@@ -383,7 +399,7 @@ namespace WebApplication1.Models
 
 
 
-                    consumos.Add(new Consumo() { valor = Convert.ToInt32(dataReader["valor"]), data = Convert.ToString(dataReader["data"]) });
+                    consumos.Add(new Consumo() { valor = Convert.ToInt32(dataReader["valor"]), data = dataReader["data"].ToString() });
                     //ligacao.Add(auxiliarLigacao);
                 }
 
@@ -436,6 +452,122 @@ namespace WebApplication1.Models
             }
             return no;
         }
+
+        public int ValidarAcesso(string nome, string pass)
+        {
+
+            string query = "select idusuario as id from usuario where nome='"+nome+"' and senha='"+pass+"'";
+
+          
+            int id=0;
+
+            //Open connection
+            if (this.OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                    
+                    id = Convert.ToInt32(dataReader["id"]);                    
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+            }
+            return id;
+        }
+        public int RegistroUsuario(string nome, string pass, string email)
+        {
+
+            string query = "insert into usuario (nome,senha,email) values ('" + nome + "','" + pass + "','" + email + "');select LAST_INSERT_ID() as id from usuario";
+
+
+            int id = 0;
+
+            //Open connection
+            if (this.OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+
+                    id = Convert.ToInt32(dataReader["id"]);
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+            }
+            return id;
+        }
+
+        public IList<SelectListItem> GetLocalizacao()
+        {
+
+            string query = "select modulo.nome ,modulo.idmodulo from modulo join usuario on usuario.idusuario=modulo.idusuario where modulo.tipo=0 and usuario.idusuario="+ HomeController.user.Id;
+
+            IList<SelectListItem> items = new List<SelectListItem>();
+            
+
+
+            //Open connection
+            if (this.OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                    SelectListItem aux = new SelectListItem { Text = Convert.ToString(dataReader["nome"]),Value= Convert.ToString(dataReader["idmodulo"]) };
+                    items.Add(aux);
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+            }
+            return items;
+        }
+        public int SaveLocalizacao(string localizacao)
+        {
+            int id = 0;
+            string query = "INSERT INTO modulo (nome,tipo,idusuario) VALUES('"+localizacao+"',0,"+HomeController.user.Id+ ");select MAX(idmodulo) as idmodulo from modulo";
+
+            IList<SelectListItem> items = new List<SelectListItem>();
+
+
+
+            //Open connection
+            if (this.OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                    id = Convert.ToInt32(dataReader["idmodulo"]);
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+
+                //return list to be displayed
+            }
+            return id;
+        }
+ 
 
     }
 }

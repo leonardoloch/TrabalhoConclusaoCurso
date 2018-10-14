@@ -15,11 +15,11 @@
                 <div class="sign-in-htm">
                     <form name="formAcesso">
                         <div class="group">
-                            <label for="user" class="label">Username</label>
+                            <label for="user" class="label">Nome</label>
                             <input id="user" type="text" class="input">
                         </div>
                         <div class="group">
-                            <label for="pass" class="label">Password</label>
+                            <label for="pass" class="label">Senha</label>
                             <input id="pass" type="password" class="input" data-type="password">
                         </div>
 
@@ -30,29 +30,28 @@
                     </div>
                 </div>
                 <div class="sign-up-htm">
-                    <form name="formRegistro" >
+                    <form name="formRegistro">
                         <div class="group">
-                            <label for="user" class="label">Username</label>
+                            <label for="user" class="label">Nome</label>
                             <input id="userRegister" type="text" class="input">
                         </div>
                         <div class="group">
-                            <label for="pass" class="label">Password</label>
+                            <label for="pass" class="label">Senha</label>
                             <input id="passRegister" type="password" class="input" data-type="password">
                         </div>
                         <div class="group">
-                            <label for="pass1" class="label">Repeat Password</label>
+                            <label for="pass1" class="label">Repita a Senha</label>
                             <input id="passRegister1" type="password" class="input" data-type="password">
                         </div>
                         <div class="group">
-                            <label for="email" class="label">Email Address</label>
+                            <label for="email" class="label">Email</label>
                             <input id="email" type="text" class="input">
                         </div>
-                        <div class="group">
-                            <button class="button" value="Sign In" onclick="SalvarRegistro()">Registrar</button>
-                        </div>
-                        <div class="hr"></div>
+s    
                     </form>
-
+                    <div class="group">
+                        <button class="button" value="Sign In" onclick="SalvarRegistro()">Registrar</button>
+                    </div>
 
                 </div>
             </div>
@@ -68,6 +67,11 @@
     function SalvarRegistro()
     {
 
+        if (document.forms["formRegistro"]["passRegister"].value != document.forms["formRegistro"]["passRegister1"].value)
+        {
+            alert("Senhas não conferem");
+            return ;
+        }
         
         $.ajax({
 
@@ -76,35 +80,10 @@
             data: { nome: document.forms["formRegistro"]["userRegister"].value, pass: document.forms["formRegistro"]["passRegister"].value, email: document.forms["formRegistro"]["email"].value },
 
             success: function (data) {
-
-                if (!data) {
-                    alert("Senhas não conferem");
-                    return false;
-                }
-                else {
-                    alert("Bem-Vindo");
-                    $.ajax({
-
-                        type: 'GET',
-                        url: '/Home/Modulos',
-                        data: {},
-
-                        success: function (data) {
-
-
-
-                        },
-                        error: function (data) { //linha
-
-                            alert("Sem conexão com o servidor");
-
-                        }
-                    });
-                }
-
+                    document.location.href = '/Home/Modulos/';
             },
             error: function (data) { //linha
-                return false;
+                
                 alert("Sem conexão com o servidor");
 
             }
@@ -114,42 +93,23 @@
 
 
     function validateForm() {
-        //document.location.href = 'login.aspx', true
-       
-        //window.location.replace("http:\\stackoverflow.com");
-        
+              
        
         $.ajax({
 
             type: 'GET',
             url: '/Home/ValidarAcesso',
-            data: { nome: document.formAcesso.pass.user, pass: document.formAcesso.pass.value },
+            data: { nome: document.formAcesso.user.value, pass: document.formAcesso.pass.value },
 
             success: function (data) {
 
                 if (data) {
-                    alert("Nome ou Senha incorreta");
-                    return false;
+                    alert("Acesso");
+                    document.location.href = '/Home/Modulos/';
                 }
                 else {
-                    alert("Acesso");
-                    data = null;
-                    $.ajax({
-
-                        type: 'Post',
-                        url: '/Home/RedirectToAboutWithAjax',
-                        data: {},
-
-                        success: function (data) {
-                            document.location.href = '/Home/Modulos';
-                            document.location.href = data.newurl;
-                            
-                        },
-                        error: function (data) { //linha
-                            alert("Sem conexão com o servidor");
-
-                        }
-                    });
+                    alert("Senha ou Nome incorreto");
+                    
                 }
 
             },
