@@ -70,22 +70,13 @@ namespace WebApplication1.Controllers
 
         public IActionResult CadastroModulo()
         {
-            ViewData["Message"] = "Your contact page.";
-
-            
-            
-                
-
+            ViewData["Message"] = "Your contact page.";   
             return View();
         }
 
       
         public IActionResult Historico()
-
-
         {
-
-            
             return View();
         }
 
@@ -187,14 +178,7 @@ namespace WebApplication1.Controllers
        
        consumos
    
-            });
-            /* 
-            json =  JObject.([
-            [new Date(2015, 0, 1), 5], [new DateTime(2015, 1, 2), 7], [new Date(2015, 2, 3), 3],
-            [new Date(2015, 3, 4), 1], [new Date(2015, 4, 5), 3], [new Date(2015, 5, 6), 4],
-            [new Date(2015, 6, 7), 3], [new Date(2015, 7, 8), 4], [new Date(2015, 8, 9), 2],
-            [new Date(2015, 9, 10), 5], [new Date(2015, 10, 11), 8], [new Date(2015, 11, 12), 6]
-        ]);*/
+            });    
             return json;
 
         }
@@ -225,12 +209,6 @@ namespace WebApplication1.Controllers
             DBConnect db = new DBConnect();
             user.Id= db.RegistroUsuario(nome, pass, email);
             return user.Id;
-
         }
-
-    }
-
-    class user
-    {
     }
 }
